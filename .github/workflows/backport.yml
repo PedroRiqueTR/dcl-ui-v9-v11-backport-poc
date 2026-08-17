@@ -1,0 +1,37 @@
+name: Backport v9 → v11
+
+# After a PR is merged into 9.0.0 with label backport-to-11.0.0,
+# cherry-pick onto 11.0.0 and open a counterpart PR.
+# Conflicts: the action comments on the original PR and does not invent a "same change".
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - "9.0.0"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  backport:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Open backport PR on 11.0.0
+        uses: korthout/backport-action@v3
+        with:
+          # Label backport-to-11.0.0 → target branch 11.0.0
+          label_pattern: "^backport-to-(.+)$"
+          pull_title: "[11.0.0] ${pull_title}"
+          pull_description: |
+            Cherry-pick of #${pull_number} onto `11.0.0`.
+
+            Original PR: #${pull_number}
+
+            This PR was opened by the v9→v11 governance POC.

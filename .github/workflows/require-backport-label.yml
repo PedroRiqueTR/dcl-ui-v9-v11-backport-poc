@@ -1,0 +1,27 @@
+name: Require v9→v11 decision
+
+# PRs into 9.0.0 must say whether the change is shared or line-specific.
+# This is process enforcement, not "same patch" detection.
+
+on:
+  pull_request:
+    types: [opened, edited, labeled, unlabeled, synchronize, reopened]
+    branches:
+      - "9.0.0"
+
+jobs:
+  require-label:
+    name: backport-to-11.0.0 or skip-backport
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check labels
+        env:
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          echo "PR labels: ${LABELS}"
+          echo "${LABELS}" | grep -Eq '(^|,)backport-to-11\.0\.0(,|$)' && exit 0
+          echo "${LABELS}" | grep -Eq '(^|,)skip-backport(,|$)' && exit 0
+          echo "::error::PRs targeting 9.0.0 need label backport-to-11.0.0 or skip-backport."
+          echo "Shared fix/feat → backport-to-11.0.0 (opens a cherry-pick PR on merge)."
+          echo "v9-only → skip-backport (and link an ADR if the public API diverges)."
+          exit 1
