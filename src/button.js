@@ -2,7 +2,7 @@
 // Bugfixes here should be labeled backport-to-11.0.0.
 
 function label() {
-  return "Pay now (second shared fix)";
+  return "Pay now (auto backport)";
 }
 
 module.exports = { label };
